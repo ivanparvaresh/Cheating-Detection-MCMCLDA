@@ -23,9 +23,9 @@ class Main:
 
     def _print(self, message, newLine=True):
         if newLine:
-            print message
+            print(message)
         else:
-            print message,
+            print(message),
         sys.stdout.flush()
 
     # read a directory and list all files with avi as extension
@@ -257,7 +257,7 @@ class Main:
                 est.append(label)
                 self._print('%s (likelihood = %f)' % (cm[label], max_score))
             confmat = self._confusion_matrix(gt, est, len(cm))
-            print confmat
+            print(confmat)
             self._print('Accuracy = %f' % accuracy_score(gt, est))
 
 if __name__ == '__main__':
@@ -273,6 +273,4 @@ if __name__ == '__main__':
             main = Main(video_dir, modec_dir)
             main.run()
         else:
-            print 'Usage: python Main.py video_dir [ modec_result_dir ]'
-
-
+            print('Usage: python Main.py video_dir [ modec_result_dir ]')

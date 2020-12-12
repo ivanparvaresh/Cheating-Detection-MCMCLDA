@@ -1,6 +1,6 @@
 import numpy as np
 import scipy.special as scp
-import sklearn.hmm as hmm
+import sklearn as hmm
 
 from Utility import LoadSavePickle
 
@@ -157,7 +157,7 @@ class MCMCLDA:
                     self.nzt_pls[(z, z_pls, c)] -= 1
                     bflag = True
 
-                if (z <> z_min):
+                if (z != z_min):
                     # 1st condition
                     left[z] = (self.nzt_min[(z, z_min, c)] + self.gamma[c]) / (self.nz_min[(z_min, c)] + self.n_topics * self.gamma[c])
                     right[z] = (self.nzt_pls[(z, z_pls, c)] + self.gamma[c]) / (self.nz_pls[(z_pls, c)] + self.n_topics * self.gamma[c])
@@ -205,18 +205,18 @@ class MCMCLDA:
 
         self.samples = []
 
-        if maxiter > 1: print "Starting Gibbs sampling (maxiter=%d, burnin=%d, lag=%d)" % (maxiter, burnin, lag),
+        if maxiter > 1: print("Starting Gibbs sampling (maxiter=%d, burnin=%d, lag=%d)" % (maxiter, burnin, lag)),
 
         for it in xrange(1, maxiter + 1):
-            if maxiter > 1: print "\nIteration %d of %d" % (it, maxiter),
+            if maxiter > 1: print("\nIteration %d of %d" % (it, maxiter)),
 
             for m in xrange(self.n_docs):
                 c = self.labels[m]
-                if verbose: print "\nDocument %d (est=%d, tru=%d)" % (m, c, self.true_labels[m])
+                if verbose: print ("\nDocument %d (est=%d, tru=%d)" % (m, c, self.true_labels[m]))
 
                 for t in xrange(len(self.matrix[m])):
                     z = self.topics[(m, t)]
-                    if verbose: print "\tt = %d, z_old = %d" % (t, z)
+                    if verbose: print("\tt = %d, z_old = %d" % (t, z))
 
                     # update pose y
                     for i, w in enumerate(self.matrix[m][t][:]):
@@ -262,11 +262,11 @@ class MCMCLDA:
                     self.nz[z] += 1
                     self.topics[(m, t)] = z
 
-                    if verbose: print "\tz_new =", self.topics[(m, t)]
+                    if verbose: print("\tz_new =", self.topics[(m, t)])
 
             # sampling after burn-in iteration and lags
             if (it > burnin) and ((it-burnin) % lag == 0):
-                if verbose: print "Sampled on iteration #%d" % it
+                if verbose: print("Sampled on iteration #%d" % it)
                 # hyperparameters estimation
                 self._est_params()
                 # sampling z for Viterbi
@@ -278,7 +278,7 @@ class MCMCLDA:
                     sample.append({'obs': obs, 'class': self.cm[self.true_labels[m]]})
                 self.samples.append({'iter': it, 'sample': sample})
 
-        if verbose: print "Sampling on %d iterations" % (len(self.samples))
+        if verbose: print("Sampling on %d iterations" % (len(self.samples)))
 
     def _est_params(self):
         self.alpha_est = (self.alpha_est * (np.sum(scp.psi(self.nyz[:, :] + self.alpha_est)) - self.n_poses * self.n_topics * scp.psi(self.alpha_est))) / (self.n_topics * (np.sum(scp.psi(self.ny[:] - self.n_topics * self.alpha_est)) - self.n_poses * scp.psi(self.n_topics * self.alpha_est)))
@@ -331,30 +331,29 @@ class MCMCLDA:
         self.beta = self.beta_est
         self.gamma = self.gamma_est
 
-        print
-        print 'Alpha =', self.alpha
-        print 'Beta =', self.beta
-        print 'Gamma =', self.gamma
+        print()
+        print('Alpha =', self.alpha)
+        print('Beta =', self.beta)
+        print('Gamma =', self.gamma)
 
         # learning HMM
-        print "Learning HMM with Viterbi algorithm ..."
+        print("Learning HMM with Viterbi algorithm ...")
         obs = self._get_sample()
         self.model = {}
         for c in self.cm:
-            print "-", c, np.array(obs[c]).shape
+            print("-", c, np.array(obs[c]).shape)
             X = np.array(obs[c])
             self.model.update({c: hmm.GaussianHMM(n_components=len(self.cm))})
             self.model[c].fit([X])
 
         # save parameters
-        print "Saving parameters ..."
+        print("Saving parameters ...")
         self._save_parameter()
 
-        print "Training done."
+        print("Training done.")
 
     def test(self, est):
         self._load_parameter()
-        self._run(maxiter=1, burnin=0, lag=1)
         obs = self._get_sample()
         score = self._classify(obs[est], est)
         return score
